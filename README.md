@@ -95,8 +95,7 @@ venv\Scripts\python.exe run.py        (Windows)
 venv/bin/python run.py                (Mac or Linux)
 ```
 
-This starts the backend and the page and opens http://localhost:3000. If you do not have Node.js, run `python -m backend.app` in one terminal and `python -m http.server 3000 --directory Frontend` in another.
-
+This starts the backend and the page and opens https://sellershield-4133.onrender.com/  
 ## Try it
 
 Pick a sample, click Analyze message, then Create PayPal order. When PayPal opens, log in with the sandbox Personal (buyer) account and approve. Then click Capture payment.
