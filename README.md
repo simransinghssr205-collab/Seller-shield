@@ -1,50 +1,54 @@
 # SellerShield
 
-**Check the buyer before you take the payment.**
+Check the buyer before you take the payment.
 
-SellerShield reads a buyer's message, tells the seller whether it looks like a scam, and uses that verdict to decide whether a PayPal payment is created or captured.
+SellerShield looks at the message a buyer sends you and tells you if it looks like a scam. That result then decides if a PayPal payment is allowed to go through.
 
-Built for the PayPal AI Hackathon. It runs on the PayPal **sandbox** only, so no real money moves. SellerShield is an independent project and is not made by or affiliated with PayPal.
+We built it for the PayPal AI Hackathon. It only uses the PayPal sandbox, so no real money moves. SellerShield is our own project and is not made by or connected to PayPal.
 
-**Demo video:** <paste your YouTube link here>
+Demo video: <paste your YouTube link here>
 
-![SellerShield showing a high risk verdict](docs/screenshot.png)
+![SellerShield showing a high risk result](docs/screenshot.png)
 
-## The problem
+## Why we made it
 
-Sellers who accept PayPal get messages like:
+If you sell things online and take PayPal, you get messages like "I paid too much, please send the difference back" or "I already paid, ship it now" or "let's do this outside PayPal". These are common scams. They work because the seller is busy and the message sounds nice.
 
-- "I overpaid, please send back the difference"
-- "I already sent the payment, ship it now"
-- "Let's pay outside PayPal"
-
-These are well-known scams, and they work because the seller is busy and the message sounds friendly. Most tools help after the money has moved. SellerShield checks before.
+Most tools only help after the money is gone. We wanted something that checks before.
 
 ## What it does
 
-| Verdict | What the seller sees | What happens with PayPal |
-| --- | --- | --- |
-| **Safe** | Looks safe | Normal checkout and capture |
-| **Warning** | Be careful, with the reason | The order is created, but capture needs the seller to confirm |
-| **Danger** | High risk, the scam type, and a safe reply to copy | No PayPal order is created |
+You paste the buyer's message. SellerShield gives back:
 
-Every check returns a risk score, the reasons, the type of scam (for example "Overpayment scam"), and a short safe reply the seller can copy and send.
+- a result: safe, warning or high risk
+- a risk score out of 100
+- the reasons
+- the kind of scam, like "Overpayment scam"
+- a short safe reply you can copy and send
 
-The verdict is saved inside the PayPal order itself (the `custom_id` field). So it is still known after the app restarts, and an order marked high risk cannot be captured. A captured payment can be refunded in one click.
+The result then controls the PayPal payment:
 
-## How PayPal is used
+| Result | What happens |
+| --- | --- |
+| Safe | Normal PayPal checkout |
+| Warning | The order is made, but you have to confirm before the money is taken |
+| High risk | No PayPal order is made at all |
 
-- OAuth 2.0 client credentials for the access token
-- **Orders v2:** create an order (with the SellerShield verdict in `custom_id`), get an order, capture an order
-- **Payments v2:** refund a capture
+The result is also saved inside the PayPal order (in the `custom_id` field). So it is not lost if the app restarts, and an order marked high risk can never be captured. A payment that was taken can be refunded with one click.
+
+## How we use PayPal
+
+- OAuth 2.0 to get an access token
+- Orders v2 to create, get and capture an order
+- Payments v2 to refund a payment
 - Sandbox only
 
-## How AI is used
+## How we use AI
 
-- Claude (Anthropic Messages API) reads the buyer's message and returns a verdict, the scam type, reasons, a one-sentence summary and a suggested reply.
-- The buyer's message is treated as untrusted data in the prompt, so instructions hidden inside a message are not followed.
-- Keyword rules always run next to the AI. The more severe verdict wins. If the AI is unavailable, the rules still give a verdict and the page says "Rules only".
-- The default model is `claude-haiku-5-5`. Set `AI_MODEL` in `.env` to use another.
+- The message is checked by an AI model (Claude, through the Anthropic API). It gives the result, the scam type, the reasons and a suggested reply.
+- We also wrote keyword rules that always run. If the AI says it is more risky than the rules do, we go with the AI. If the AI is not available, the rules still work and the page shows "Rules only".
+- The buyer's message is treated as untrusted text, so instructions hidden inside a message are not followed.
+- The model can be changed with `AI_MODEL` in `.env`.
 
 ## How it fits together
 
@@ -54,18 +58,18 @@ Browser (Frontend, port 3000)
    v
 Flask backend (port 5000)
    |-- risk_rules.py   keyword rules, always on
-   |-- ai_checker.py   Claude call, when ANTHROPIC_API_KEY is set
-   |-- analyzer.py     combines both, the more severe verdict wins
+   |-- ai_checker.py   AI call, when ANTHROPIC_API_KEY is set
+   |-- analyzer.py     combines both, the riskier result wins
    '-- app.py -------> PayPal sandbox (create, get, capture, refund)
 ```
 
-## Run it
+## How to run it
 
-You need Python 3, Node.js, and PayPal sandbox keys.
+You need Python 3, Node.js and PayPal sandbox keys.
 
-**1. Get sandbox keys.** On developer.paypal.com open Apps & Credentials, switch to **Sandbox**, click Create App (type Merchant), and copy the Client ID and Secret. Sandbox test accounts, including a Personal (buyer) account, are under Testing Tools.
+1. Get sandbox keys. On developer.paypal.com go to Apps & Credentials, switch to Sandbox, click Create App (type Merchant), and copy the Client ID and Secret. The test buyer account is under Testing Tools.
 
-**2. Install.**
+2. Install:
 
 ```
 python -m venv venv
@@ -74,7 +78,7 @@ source venv/bin/activate       (Mac or Linux)
 pip install -r requirements.txt
 ```
 
-**3. Create a `.env` file** in the project folder. It is in `.gitignore`, so never commit it.
+3. Make a `.env` file in the project folder. It is in `.gitignore`, so do not commit it.
 
 ```
 PAYPAL_CLIENT_ID=your_sandbox_client_id
@@ -82,26 +86,26 @@ PAYPAL_CLIENT_SECRET=your_sandbox_secret
 ANTHROPIC_API_KEY=your_key_for_the_ai_check
 ```
 
-`ANTHROPIC_API_KEY` is optional. Without it, only the rules run.
+The AI key is optional. Without it only the rules run.
 
-**4. Start.**
+4. Start it:
 
 ```
 venv\Scripts\python.exe run.py        (Windows)
 venv/bin/python run.py                (Mac or Linux)
 ```
 
-This starts the backend and the page together and opens http://localhost:3000. Without Node.js, run `python -m backend.app` in one terminal and `python -m http.server 3000 --directory Frontend` in another.
+This starts the backend and the page and opens http://localhost:3000. If you do not have Node.js, run `python -m backend.app` in one terminal and `python -m http.server 3000 --directory Frontend` in another.
 
 ## Try it
 
-Pick a sample from the list, click **Analyze message**, then **Create PayPal order**. When PayPal opens, log in with the sandbox **Personal** (buyer) account and approve. Then click **Capture payment**.
+Pick a sample, click Analyze message, then Create PayPal order. When PayPal opens, log in with the sandbox Personal (buyer) account and approve. Then click Capture payment.
 
-| Sample | Verdict | What happens |
+| Sample | Result | What happens |
 | --- | --- | --- |
 | 1. "Is this still available?" | Safe | Normal checkout and capture |
-| 8. "Message me on WhatsApp" | Warning | Capture asks the seller to confirm |
-| 4. "I overpaid, send back the difference" | Danger | No PayPal order is created |
+| 8. "Message me on WhatsApp" | Warning | Capture asks you to confirm |
+| 4. "I overpaid, send back the difference" | High risk | No PayPal order is made |
 
 ## Tests
 
@@ -109,16 +113,16 @@ Pick a sample from the list, click **Analyze message**, then **Create PayPal ord
 python -m unittest tests.test_rules tests.test_analyzer tests.test_app
 ```
 
-The tests need no keys and no internet. The 15 sample messages in `data/sample_messages.csv` are checked against their expected verdicts.
+They do not need keys or internet. They check all 15 sample messages in `data/sample_messages.csv` against the result we expect.
 
-## Project layout
+## Files
 
 ```
 backend/
-  app.py            routes and PayPal gating
+  app.py            routes and the PayPal checks
   paypal_client.py  PayPal API calls
   risk_rules.py     keyword rules, scam types, safe replies
-  ai_checker.py     Claude call
+  ai_checker.py     the AI call
   analyzer.py       combines rules and AI
   config.py         reads .env
 Frontend/           the page (index.html, style.css, server.js)
@@ -129,16 +133,16 @@ run.py              starts backend and page together
 
 ## Limits
 
-- The rules are English keyword patterns, so they catch common scams, not every scam.
-- It uses the PayPal sandbox only, so it has not handled real payments.
-- A person still confirms any warning, because the AI can be wrong.
-- SellerShield does not replace PayPal's own seller protection or dispute process.
+- The rules are English keywords, so they catch common scams but not every scam.
+- It only uses the PayPal sandbox. It has never handled real payments.
+- The AI can be wrong, which is why a person still confirms every warning.
+- It does not replace PayPal's own seller protection or dispute process.
 
-## What's next
+## What we want to add next
 
-- Authorize the payment first, then capture or void it after the seller reviews a warning.
+- Authorize the payment first, then capture or cancel it after the seller reviews a warning.
 - Rules and AI prompts for more languages.
-- Connect to the marketplaces where sellers actually receive these messages.
+- Connect it to the sites where sellers actually get these messages.
 
 ## Team
 
