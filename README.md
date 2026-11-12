@@ -8,7 +8,7 @@ We built it for the PayPal AI Hackathon. It only uses the PayPal sandbox, so no 
 
 Live demo: https://sellershield-4133.onrender.com/
 
-Demo video: <paste your YouTube link here>
+Demo video: https://www.youtube.com/watch?v=C_MyVet62uc
 
 ## Why we made it
 
