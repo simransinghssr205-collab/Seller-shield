@@ -6,7 +6,7 @@ SellerShield looks at the message a buyer sends you and tells you if it looks li
 
 We built it for the PayPal AI Hackathon. It only uses the PayPal sandbox, so no real money moves. SellerShield is our own project and is not made by or connected to PayPal.
 
-Live demo: https://sellershield-4133.onrender.com/ 
+Live demo: https://sellershield-4133.onrender.com/ (it runs on a free plan, so the first load can take up to a minute). The message check works online. The full PayPal payment flow (approve, capture, refund) works when you run it on your own computer, and it is shown in the demo video.
 
 Demo video: <paste your YouTube link here>
 
@@ -135,6 +135,7 @@ run.py              starts backend and page together
 
 - The rules are English keywords, so they catch common scams but not every scam.
 - It only uses the PayPal sandbox. It has never handled real payments.
+- The live demo link only fully supports the message check. After a buyer approves a payment on PayPal, the hosted version sends them back to `localhost`, so approve, capture and refund only work end to end when you run the app locally. We ran out of time to finish the hosted return setting (`FRONTEND_URL`).
 - The AI can be wrong, which is why a person still confirms every warning.
 - It does not replace PayPal's own seller protection or dispute process.
 
