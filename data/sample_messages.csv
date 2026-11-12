@@ -1,0 +1,16 @@
+id,message,expected
+1,"Hi, is this still available? Can I pick it up tomorrow evening?",safe
+2,Thanks! Could you tell me the battery health and whether the original charger is included?,safe
+3,Would you take $90 instead of $100? I can pay right now through PayPal checkout.,safe
+4,I accidentally overpaid by $200. Please send back the difference via Western Union and keep your fee.,danger
+5,Let's do Friends and Family so we both avoid fees. I can come and pick it up right away.,warning
+6,"My shipping agent will pick up the item. I will pay extra for the trouble, so please send the agent's fee back to him.",danger
+7,URGENT!! Payment pending. Click https://paypa1-secure-login.com to confirm and release your funds immediately,danger
+8,Can you message me on WhatsApp? It is easier to chat there. My number is on my profile.,warning
+9,"I already sent the payment, please ship today. Check your email for the receipt.",warning
+10,Please send me your PayPal password and the verification code you receive so I can confirm the transfer.,danger
+11,"Hello, I want to buy 50 units. I will pay with a gift card and my freight forwarder will collect them.",danger
+12,Hi! Do you ship to Canada? I'd like two of them if the price is the same.,safe
+13,Is the warranty still valid? Also can you share a few more photos?,safe
+14,"I will pay in Bitcoin, it is faster. Send me your wallet address.",warning
+15,"Send me the tracking number once it ships, thank you so much!",safe
