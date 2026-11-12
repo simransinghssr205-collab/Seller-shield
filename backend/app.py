@@ -1,5 +1,6 @@
 import os
 import re
+
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
@@ -9,7 +10,10 @@ from .analyzer import analyze_message
 app = Flask(__name__)
 CORS(app)
 
-FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
+# Folder that holds index.html and style.css (capital F, Linux is case-sensitive)
+FRONTEND_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Frontend"
+)
 
 
 @app.route("/")
@@ -17,9 +21,11 @@ def home():
     return send_from_directory(FRONTEND_DIR, "index.html")
 
 
-@app.route("/<path:filename>")
-def frontend_files(filename):
-    return send_from_directory(FRONTEND_DIR, filename)
+@app.route("/style.css")
+def css():
+    return send_from_directory(FRONTEND_DIR, "style.css")
+
+
 # order_id -> full SellerShield analysis, kept in memory for speed.
 # The verdict is ALSO saved inside the PayPal order (custom_id), so it is
 # still known after a restart.
