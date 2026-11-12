@@ -6,7 +6,7 @@ SellerShield looks at the message a buyer sends you and tells you if it looks li
 
 We built it for the PayPal AI Hackathon. It only uses the PayPal sandbox, so no real money moves. SellerShield is our own project and is not made by or connected to PayPal.
 
-Live demo: https://sellershield-4133.onrender.com/ (it runs on a free plan, so the first load can take up to a minute). The message check works online. The full PayPal payment flow (approve, capture, refund) works when you run it on your own computer, and it is shown in the demo video.
+Live demo: https://sellershield-4133.onrender.com/
 
 Demo video: <paste your YouTube link here>
 
