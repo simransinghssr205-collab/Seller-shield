@@ -1,0 +1,295 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap');
+
+:root {
+  --blue: #002991;          /* hero blue, sampled from the reference page */
+  --blue-dark: #001c64;
+  --blue-tint: #e8eefb;
+  --blue-tint-hover: #d6e0f7;
+  --blue-tint-active: #c3d0f0;
+  --page: #f5f7fa;
+  --card: #ffffff;
+  --text: #0b1220;
+  --text-muted: #55607a;
+  --border: #d6dbe6;
+  --focus: #0066f5;
+  --radius: 1.5rem;
+
+  --safe-bg: #d9f5e3;    --safe-line: #86d6a3;    --safe-text: #0a6b2d;
+  --warn-bg: #fff2cc;    --warn-line: #f0c85a;    --warn-text: #7a5600;
+  --danger-bg: #fde3e3;  --danger-line: #f0a0a0;  --danger-text: #a31515;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', Helvetica, Arial, sans-serif;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  background: var(--page);
+  -webkit-font-smoothing: antialiased;
+}
+
+.hidden { display: none !important; }
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- Hero ---------- */
+.hero {
+  background: var(--blue);
+  color: #fff;
+  padding: 20px 0 56px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.brand-icon { flex: none; }
+
+.conn { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.hero-copy { text-align: center; padding: 48px 0 8px; }
+.hero h1 {
+  margin: 0 auto;
+  max-width: 22ch;
+  font-size: clamp(2.5rem, 7vw, 4.5rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+}
+.tagline {
+  margin: 24px auto 0;
+  max-width: 52ch;
+  font-size: 1.25rem;
+  line-height: 1.45;
+  color: #d7e0fb;
+}
+
+/* The three outcomes, in the hero so the rules are visible at a glance */
+.outcomes {
+  list-style: none;
+  margin: 40px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+.outcomes li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.95rem;
+}
+.outcomes strong { font-weight: 800; }
+.dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.dot.safe    { background: #4cd98a; }
+.dot.warning { background: #ffc933; }
+.dot.danger  { background: #ff6b6b; }
+
+/* ---------- Panels ---------- */
+main.wrap {
+  padding-top: 32px;
+  padding-bottom: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.panel {
+  padding: 32px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.panel h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px;
+  font-size: 1.75rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  flex: none;
+}
+
+.hint { color: var(--text-muted); margin: 8px 0 0; line-height: 1.5; max-width: 70ch; }
+
+/* ---------- Form fields ---------- */
+label {
+  display: block;
+  margin: 20px 0 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+select, textarea, input[type="text"] {
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+}
+input[type="text"] { max-width: 220px; }
+textarea { min-height: 170px; resize: vertical; line-height: 1.5; }
+
+select:focus, textarea:focus, input[type="text"]:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-color: var(--focus);
+}
+
+.row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+
+/* ---------- Buttons: blue pills, tinted for .ghost ---------- */
+button {
+  font: inherit;
+  font-weight: 700;
+  min-height: 3rem;
+  padding: 0.75rem 1.5rem;
+  color: #fff;
+  background: var(--blue);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button:hover:not(:disabled) { background: var(--blue-dark); }
+button:active:not(:disabled) { background: #00124a; }
+button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+button:disabled { background: #eef1f6; color: #8a94a8; cursor: not-allowed; }
+
+button.ghost { background: var(--blue-tint); color: var(--blue); }
+button.ghost:hover:not(:disabled) { background: var(--blue-tint-hover); }
+button.ghost:active:not(:disabled) { background: var(--blue-tint-active); }
+button.ghost:disabled { background: #eef1f6; color: #8a94a8; }
+
+button.small, button.small-dark {
+  min-height: 2.5rem;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.9rem;
+}
+
+/* On the blue hero the test button needs to read as a white pill */
+.hero button.ghost { background: #fff; color: var(--blue); }
+.hero button.ghost:hover:not(:disabled) { background: var(--blue-tint); }
+
+/* ---------- Connection pill ---------- */
+.pill {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+.pill.ok   { background: var(--safe-bg);   color: var(--safe-text); }
+.pill.fail { background: var(--danger-bg); color: var(--danger-text); }
+
+/* ---------- Status line under the PayPal buttons ---------- */
+.result {
+  margin: 20px 0 0;
+  padding: 14px 16px;
+  border-radius: 1rem;
+  background: var(--page);
+  border: 1px solid var(--border);
+  word-break: break-word;
+}
+.result.ok   { background: var(--safe-bg);   border-color: var(--safe-line);   color: var(--safe-text); }
+.result.fail { background: var(--danger-bg); border-color: var(--danger-line); color: var(--danger-text); }
+
+/* ---------- Risk verdict box ---------- */
+.verdict {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background: var(--page);
+}
+.verdict p { margin: 8px 0 0; line-height: 1.5; }
+.verdict ul { margin: 12px 0 0; padding-left: 20px; }
+.verdict li { margin-bottom: 6px; line-height: 1.45; }
+
+.v-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.v-head strong { font-size: 1.3rem; font-weight: 900; }
+.v-head span { color: var(--text-muted); font-size: 0.9rem; }
+.verdict .note { color: var(--text-muted); font-size: 0.9rem; }
+.verdict .stype { font-weight: 700; }
+
+.verdict.safe    { background: var(--safe-bg);   border-color: var(--safe-line); }
+.verdict.warning { background: var(--warn-bg);   border-color: var(--warn-line); }
+.verdict.danger  { background: var(--danger-bg); border-color: var(--danger-line); }
+.verdict.error   { background: var(--danger-bg); border-color: var(--danger-line); color: var(--danger-text); }
+
+/* Suggested reply box inside a verdict */
+.reply {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  color: var(--text);
+}
+.reply h3 { margin: 0 0 8px; font-size: 0.9rem; font-weight: 700; color: var(--text-muted); }
+.reply p { margin: 0 0 12px; }
+
+/* ---------- Independent-project notice ---------- */
+.foot { padding-bottom: 48px; text-align: center; }
+.foot p {
+  margin: 0 auto;
+  max-width: 62ch;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 600px) {
+  .hero { padding-bottom: 40px; }
+  .hero-copy { padding-top: 36px; }
+  .nav { justify-content: center; }
+  .outcomes li { width: 100%; }
+  .panel { padding: 20px; }
+  .panel h2 { font-size: 1.4rem; }
+  .row button { width: 100%; }
+  input[type="text"] { max-width: none; }
+}

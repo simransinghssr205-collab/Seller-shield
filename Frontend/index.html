@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SellerShield checks a buyer's message for scam signs before you take their PayPal payment.">
+  <title>SellerShield: check the buyer before you take the payment</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <div class="nav">
+        <div class="brand">
+          <svg class="brand-icon" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
+            <path d="M12 2.5 4.5 5.4v5.7c0 4.6 3.1 8.7 7.5 10.4 4.4-1.7 7.5-5.8 7.5-10.4V5.4L12 2.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="m8.6 12.2 2.4 2.4 4.4-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>SellerShield</span>
+        </div>
+        <div class="conn">
+          <button id="testBtn" class="ghost small">Test PayPal connection</button>
+          <span id="testResult" class="pill">Not tested</span>
+        </div>
+      </div>
+
+      <div class="hero-copy">
+        <h1>Check the buyer before you take the payment.</h1>
+        <p class="tagline">Every message tells a story. We help you spot the red flags before they become costly mistakes.</p>
+      </div>
+
+      <ul class="outcomes" aria-label="What happens to your payment">
+        <li><span class="dot safe"></span><strong>Safe</strong> Normal checkout</li>
+        <li><span class="dot warning"></span><strong>Warning</strong> You confirm before capture</li>
+        <li><span class="dot danger"></span><strong>High risk</strong> No order is created</li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel">
+      <h2><span class="step">1</span> Check the buyer's message</h2>
+
+      <label for="sample">Try a sample</label>
+      <select id="sample">
+        <option value="">Choose a sample message...</option>
+      </select>
+
+      <label for="message">Buyer message</label>
+      <textarea id="message" rows="5" placeholder="Paste the message the buyer sent you..."></textarea>
+
+      <div class="row">
+        <button id="analyzeBtn">Analyze message</button>
+      </div>
+      <div id="verdict" class="verdict hidden" aria-live="polite"></div>
+    </section>
+
+    <section class="panel">
+      <h2><span class="step">2</span> Take the payment with PayPal</h2>
+      <p class="hint">The verdict above travels with the order. High risk is blocked before PayPal is called, and a warning asks you to confirm before the money is taken.</p>
+
+      <label for="amount">Price (USD)</label>
+      <input id="amount" type="text" inputmode="decimal" value="25.00" autocomplete="off">
+
+      <div class="row">
+        <button id="orderBtn">Create PayPal order</button>
+        <button id="statusBtn" class="ghost" disabled>Check status</button>
+        <button id="captureBtn" class="ghost" disabled>Capture payment</button>
+        <button id="refundBtn" class="ghost" disabled>Refund payment</button>
+      </div>
+      <p id="orderResult" class="result">No order yet.</p>
+      <div id="orderVerdict" class="verdict hidden" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    <p>SellerShield is an independent hackathon project built for the PayPal AI Hackathon. It is not made by or affiliated with PayPal, and it only uses the PayPal sandbox, so no real money moves.</p>
+  </footer>
+
+  <script>
+    // Local two-server mode (page on :3000) talks to :5000. When Flask serves the page, use the same address.
+    const API = location.port === "3000" ? "http://127.0.0.1:5000" : "";
+    const SAMPLES = [{"message": "Hi, is this still available? Can I pick it up tomorrow evening?"}, {"message": "Thanks! Could you tell me the battery health and whether the original charger is included?"}, {"message": "Would you take $90 instead of $100? I can pay right now through PayPal checkout."}, {"message": "I accidentally overpaid by $200. Please send back the difference via Western Union and keep your fee."}, {"message": "Let's do Friends and Family so we both avoid fees. I can come and pick it up right away."}, {"message": "My shipping agent will pick up the item. I will pay extra for the trouble, so please send the agent's fee back to him."}, {"message": "URGENT!! Payment pending. Click https://paypa1-secure-login.com to confirm and release your funds immediately"}, {"message": "Can you message me on WhatsApp? It is easier to chat there. My number is on my profile."}, {"message": "I already sent the payment, please ship today. Check your email for the receipt."}, {"message": "Please send me your PayPal password and the verification code you receive so I can confirm the transfer."}, {"message": "Hello, I want to buy 50 units. I will pay with a gift card and my freight forwarder will collect them."}, {"message": "Hi! Do you ship to Canada? I'd like two of them if the price is the same."}, {"message": "Is the warranty still valid? Also can you share a few more photos?"}, {"message": "I will pay in Bitcoin, it is faster. Send me your wallet address."}, {"message": "Send me the tracking number once it ships, thank you so much!"}];
+    const LABELS = {
+      safe: "Looks safe",
+      warning: "Be careful",
+      danger: "High risk. Do not proceed.",
+    };
+    const $ = (id) => document.getElementById(id);
+    let orderId = null;
+    let captureId = null;
+
+    function show(el, text, kind) {
+      el.className = "result" + (kind ? " " + kind : "");
+      el.textContent = text;
+    }
+
+    function hide(el) {
+      el.className = "verdict hidden";
+      el.replaceChildren();
+    }
+
+    function showError(el, text) {
+      el.className = "verdict error";
+      el.replaceChildren();
+      el.textContent = text;
+    }
+
+    async function copyText(text, btn) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const t = document.createElement("textarea");
+        t.value = text;
+        document.body.append(t);
+        t.select();
+        document.execCommand("copy");
+        t.remove();
+      }
+      btn.textContent = "Copied";
+      setTimeout(() => { btn.textContent = "Copy reply"; }, 1500);
+    }
+
+    function renderVerdict(el, a) {
+      el.className = "verdict " + a.verdict;
+      el.replaceChildren();
+
+      const head = document.createElement("div");
+      head.className = "v-head";
+      const label = document.createElement("strong");
+      label.textContent = LABELS[a.verdict] || a.verdict;
+      const meta = document.createElement("span");
+      if (a.restored) {
+        meta.textContent = "Verdict saved inside the PayPal order";
+      } else {
+        meta.textContent = "Risk score " + a.score + "/100 · " + (a.ai_used ? "AI + rules" : "Rules only");
+      }
+      head.append(label, meta);
+      el.append(head);
+
+      if (a.scam_type) {
+        const t = document.createElement("p");
+        t.className = "stype";
+        t.textContent = "Looks like: " + a.scam_type;
+        el.append(t);
+      }
+      if (a.summary) {
+        const p = document.createElement("p");
+        p.textContent = a.summary;
+        el.append(p);
+      }
+      if (a.reasons && a.reasons.length) {
+        const ul = document.createElement("ul");
+        a.reasons.forEach((r) => {
+          const li = document.createElement("li");
+          li.textContent = r;
+          ul.append(li);
+        });
+        el.append(ul);
+      }
+      if (a.suggested_reply) {
+        const box = document.createElement("div");
+        box.className = "reply";
+        const title = document.createElement("h3");
+        title.textContent = "Suggested reply to the buyer";
+        const text = document.createElement("p");
+        text.textContent = a.suggested_reply;
+        const btn = document.createElement("button");
+        btn.className = "ghost small-dark";
+        btn.textContent = "Copy reply";
+        btn.addEventListener("click", () => copyText(a.suggested_reply, btn));
+        box.append(title, text, btn);
+        el.append(box);
+      }
+      if (a.ai_error) {
+        const note = document.createElement("p");
+        note.className = "note";
+        note.textContent = "The AI check was unavailable (" + a.ai_error + "). Rules were used instead.";
+        el.append(note);
+      }
+    }
+
+    async function call(path, options) {
+      let res;
+      try {
+        res = await fetch(API + path, options);
+      } catch (e) {
+        throw new Error("Cannot reach the backend. Is it running on port 5000?");
+      }
+      let data = {};
+      try { data = await res.json(); } catch (e) { /* no JSON body */ }
+      return { ok: res.ok, status: res.status, data: data };
+    }
+
+    function post(path, body) {
+      return call(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body || {}),
+      });
+    }
+
+    function setOrder(id) {
+      orderId = id;
+      $("statusBtn").disabled = !id;
+      $("captureBtn").disabled = !id;
+    }
+
+    function setCapture(id) {
+      captureId = id;
+      $("refundBtn").disabled = !id;
+    }
+
+    // Samples
+    SAMPLES.forEach((s, i) => {
+      const o = document.createElement("option");
+      o.value = i;
+      o.textContent = (i + 1) + ". " + (s.message.length > 70 ? s.message.slice(0, 70) + "..." : s.message);
+      $("sample").append(o);
+    });
+    $("sample").addEventListener("change", () => {
+      const s = SAMPLES[$("sample").value];
+      if (s) {
+        $("message").value = s.message;
+        hide($("verdict"));
+      }
+    });
+
+    // Test the PayPal connection
+    $("testBtn").addEventListener("click", async () => {
+      $("testResult").className = "pill";
+      $("testResult").textContent = "Testing...";
+      try {
+        const r = await call("/api/paypal/test");
+        if (!r.ok) throw new Error(r.data.error || "Request failed");
+        $("testResult").className = "pill ok";
+        $("testResult").textContent = "Connected";
+      } catch (err) {
+        $("testResult").className = "pill fail";
+        $("testResult").textContent = "Failed";
+        $("testResult").title = err.message;
+        show($("orderResult"), "PayPal connection failed: " + err.message, "fail");
+      }
+    });
+
+    // 1. Analyze the message
+    $("analyzeBtn").addEventListener("click", async () => {
+      const message = $("message").value.trim();
+      if (!message) {
+        showError($("verdict"), "Write or paste a buyer message first.");
+        return;
+      }
+      $("analyzeBtn").disabled = true;
+      $("analyzeBtn").textContent = "Analyzing...";
+      try {
+        const r = await post("/api/check-message", { message: message });
+        if (!r.ok) throw new Error(r.data.error || "Request failed");
+        renderVerdict($("verdict"), r.data);
+      } catch (err) {
+        showError($("verdict"), err.message);
+      } finally {
+        $("analyzeBtn").disabled = false;
+        $("analyzeBtn").textContent = "Analyze message";
+      }
+    });
+
+    // 2a. Create the order. PayPal asks the buyer to approve it.
+    $("orderBtn").addEventListener("click", async () => {
+      const message = $("message").value.trim();
+      show($("orderResult"), "Creating order...");
+      hide($("orderVerdict"));
+      setCapture(null);
+      try {
+        const body = { amount: $("amount").value.trim() };
+        if (message) body.message = message;
+        const r = await post("/api/create-order", body);
+        if (r.status === 403 && r.data.blocked) {
+          show($("orderResult"), r.data.error + " No PayPal order was created.", "fail");
+          renderVerdict($("orderVerdict"), r.data.analysis);
+          return;
+        }
+        if (!r.ok) throw new Error(r.data.error || "Request failed");
+        setOrder(r.data.id);
+        if (r.data.analysis) renderVerdict($("orderVerdict"), r.data.analysis);
+        if (!r.data.approve_url) throw new Error("PayPal did not return an approval link.");
+        show($("orderResult"), "Order " + r.data.id + " created. Sending you to PayPal...", "ok");
+        window.location.href = r.data.approve_url;
+      } catch (err) {
+        show($("orderResult"), "Failed: " + err.message, "fail");
+      }
+    });
+
+    // 2b. Check the order status
+    async function checkStatus() {
+      show($("orderResult"), "Checking...");
+      try {
+        const r = await call("/api/order/" + encodeURIComponent(orderId));
+        if (!r.ok) throw new Error(r.data.error || "Request failed");
+        const o = r.data;
+        const d = o.details || {};
+        const price = d.amount ? " · " + d.amount + " " + (d.currency || "") : "";
+        show($("orderResult"), "Order " + o.id + " status: " + o.status + price,
+             o.status === "COMPLETED" ? "ok" : "");
+        if (o.sellershield) renderVerdict($("orderVerdict"), o.sellershield);
+        setCapture(d.capture_id || null);
+      } catch (err) {
+        show($("orderResult"), "Failed: " + err.message, "fail");
+      }
+    }
+    $("statusBtn").addEventListener("click", checkStatus);
+
+    // 2c. Capture the payment once the buyer has approved
+    $("captureBtn").addEventListener("click", async () => {
+      show($("orderResult"), "Capturing...");
+      try {
+        const path = "/api/order/" + encodeURIComponent(orderId) + "/capture";
+        let r = await post(path, {});
+        if (r.status === 409 && r.data.needs_confirmation) {
+          renderVerdict($("orderVerdict"), r.data.analysis);
+          if (!window.confirm(r.data.error + "\n\nCapture the payment anyway?")) {
+            show($("orderResult"), "Capture cancelled. The order is still waiting.");
+            return;
+          }
+          r = await post(path, { confirm: true });
+        }
+        if (r.status === 403 && r.data.blocked) {
+          show($("orderResult"), r.data.error, "fail");
+          renderVerdict($("orderVerdict"), r.data.analysis);
+          return;
+        }
+        if (!r.ok) throw new Error(r.data.error || "Request failed");
+        setCapture(r.data.capture_id || null);
+        show($("orderResult"), "Payment captured. Status: " + r.data.status, "ok");
+      } catch (err) {
+        show($("orderResult"), "Failed: " + err.message, "fail");
+      }
+    });
+
+    // 2d. Refund a captured payment
+    $("refundBtn").addEventListener("click", async () => {
+      if (!captureId) return;
+      show($("orderResult"), "Refunding...");
+      try {
+        const r = await post("/api/capture/" + encodeURIComponent(captureId) + "/refund", {});
+        if (!r.ok) throw new Error(r.data.error || "Request failed");
+        show($("orderResult"), "Refund " + (r.data.status || "sent").toLowerCase() + ". The money goes back to the buyer.", "ok");
+        setCapture(null);
+      } catch (err) {
+        show($("orderResult"), "Failed: " + err.message, "fail");
+      }
+    });
+
+    // PayPal sends the buyer back here with ?token=ORDER_ID after approving
+    const params = new URLSearchParams(window.location.search);
+    const returnedId = params.get("token");
+    if (returnedId) {
+      setOrder(returnedId);
+      if (params.get("cancelled")) {
+        show($("orderResult"), "Payment was cancelled on PayPal.", "fail");
+      } else {
+        checkStatus();
+      }
+    }
+  </script>
+</body>
+</html>
