@@ -6,9 +6,9 @@ SellerShield looks at the message a buyer sends you and tells you if it looks li
 
 We built it for the PayPal AI Hackathon. It only uses the PayPal sandbox, so no real money moves. SellerShield is our own project and is not made by or connected to PayPal.
 
-Demo video: <paste your YouTube link here>
+Live demo: https://sellershield-4133.onrender.com/ (it runs on a free plan, so the first load can take up to a minute)
 
-![SellerShield showing a high risk result](docs/screenshot.png)
+Demo video: <paste your YouTube link here>
 
 ## Why we made it
 
@@ -83,8 +83,10 @@ pip install -r requirements.txt
 ```
 PAYPAL_CLIENT_ID=your_sandbox_client_id
 PAYPAL_CLIENT_SECRET=your_sandbox_secret
-PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
+ANTHROPIC_API_KEY=your_key_for_the_ai_check
 ```
+
+The AI key is optional. Without it only the rules run. `PAYPAL_BASE_URL` is also read from `.env` and already defaults to the sandbox.
 
 4. Start it:
 
@@ -93,7 +95,8 @@ venv\Scripts\python.exe run.py        (Windows)
 venv/bin/python run.py                (Mac or Linux)
 ```
 
-This starts the backend and the page and opens https://sellershield-4133.onrender.com/  
+This starts the backend and the page and opens http://localhost:3000. If you do not have Node.js, run `python -m backend.app` in one terminal and `python -m http.server 3000 --directory Frontend` in another.
+
 ## Try it
 
 Pick a sample, click Analyze message, then Create PayPal order. When PayPal opens, log in with the sandbox Personal (buyer) account and approve. Then click Capture payment.
