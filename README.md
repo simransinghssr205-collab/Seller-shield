@@ -83,10 +83,8 @@ pip install -r requirements.txt
 ```
 PAYPAL_CLIENT_ID=your_sandbox_client_id
 PAYPAL_CLIENT_SECRET=your_sandbox_secret
-ANTHROPIC_API_KEY=your_key_for_the_ai_check
+PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
 ```
-
-The AI key is optional. Without it only the rules run.
 
 4. Start it:
 
